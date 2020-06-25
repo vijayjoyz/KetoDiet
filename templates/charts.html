@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    	<title>KetoDiet</title>
+    	<!-- Compiled and minified CSS -->
+    	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv=X-UA-Compatible content="IE=edge">
+        <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/js/materialize.min.js"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/0.5.5/chartjs-plugin-annotation.js"></script>
+        <!-- Compiled and minified JavaScript -->
+        <script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-app.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-database.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-auth.js"></script>
+        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+        
+        <script>
+        
+            var firebaseConfig = {
+            "apiKey": "AIzaSyCiVqNH0GtZaM4EPjjWVIIYbCjgDXFmUfg",
+            "authDomain": "homechef-34eba.firebaseapp.com",
+            "databaseURL": "https://homechef-34eba.firebaseio.com",
+            "projectId": "homechef-34eba",
+            "storageBucket": "homechef-34eba.appspot.com",
+            "messagingSenderId": "722051392269",
+            "appId": "1:722051392269:web:dd7d5bb1d92fd95093c644"
+            };
+            
+            var target_data;
+
+            var carb_ob_tar;
+            var fat_ob_tar;
+            var proteins_ob_tar;
+
+            var carb_ob = [];
+            var fat_ob =[];
+            var pro_ob = [];
+
+            var carb_per_ob;
+            var fat_per_ob;
+            var pro_per_ob;
+            
+            var sum_carb=0;
+            var sum_fat =0;
+            var sum_pro=0;
+
+            var car_per_tar;
+            var fat_per_tar;
+            var pro_per_tar;
+
+            var total_ob;
+            var total_tar;
+            var total_per_ob
+            var total_per_tar;
+
+            var d1;
+            var d2;
+            var d3;
+
+
+            // Initialize Firebase
+            firebase.initializeApp(firebaseConfig);
+            var database = firebase.database();
+            function toggleSignIn() 
+            {
+              if (firebase.auth().currentUser) {
+                //console.log("clicked");
+                // [START signout]
+                firebase.auth().signOut();
+                window.location.assign('https://key2diet.herokuapp.com');
+                // [END signout]
+              }
+              else{
+                window.location.assign('https://key2diet.herokuapp.com');
+              }
+            }
+        
+            function initApp()
+            {
+                firebase.auth().onAuthStateChanged(function(user)
+                {
+                if (user) 
+                {
+                // User is signed in.
+                var displayName = user.displayName;
+                var email = user.email;
+                var emailVerified = user.emailVerified;
+                var photoURL = user.photoURL;
+                var isAnonymous = user.isAnonymous;
+                var uid = user.uid;
+                var providerData = user.providerData;
+                // [START_EXCLUDE]
+                ////console.log(email,displayName,uid)
+                var dispname = document.getElementById("dispname");
+                dispname.textContent = displayName;
+                var sidedispname = document.getElementById("sidedispname");
+                sidedispname.textContent = displayName;
+                var dispemail = document.getElementById("dispemail");
+                dispemail.textContent = email;
+                var dispimage = document.getElementById("dispimage");
+                dispimage.src = photoURL;
+                
+
+                var target = firebase.database().ref('/ketousers/'+uid+'/target');
+                target.once("value").then(function(snapshot){ 
+                    data=snapshot.val();
+                    ////console.log(data);
+                    target_data = data;
+                    //console.log(target_data);
+                    if(data == null){
+                        alert("Update Target in Settings!");
+                        window.location.assign('user');
+                    }
+                    else{
+                        carb_ob_tar=target_data[0];
+                        fat_ob_tar=target_data[1];
+                        proteins_ob_tar=target_data[2];
+                        document.getElementById("carb_tar").innerHTML = carb_ob_tar;
+                        document.getElementById("fat_tar").innerHTML = fat_ob_tar ;
+                        document.getElementById("proteins_tar").innerHTML= proteins_ob_tar;
+
+                    }
+
+                    },function(error) {
+                    // The Promise was rejected.
+                    //console.error(error);
+                    });
+                
+
+                var ref = firebase.database().ref('/ketousers/'+ uid + '/food_data');
+                ref.once("value").then(function(snapshot)
+                {
+                    data = snapshot.val();
+                    if(data == null){
+                        alert("Please enter Food in Search");
+                        window.location.assign('search');
+                    }
+                    ////console.log(data);
+                    for (const [key, value] of Object.entries(data)) {
+
+                        for (const [k, v] of Object.entries(value)) {
+                        
+                            for (const [kd, vd] of Object.entries(v)) {
+                                ////console.log(kd,vd);
+                                if(kd=="CarbPerUnit")
+                                {
+                                    carb_ob.push(parseInt(vd));
+                                }
+                                else if(kd=="FatPerUnit"){
+                                    fat_ob.push(parseInt(vd));
+                                }
+                                else if(kd=="ProteinsPerUnit"){
+                                    pro_ob.push(parseInt(vd));
+                                }
+                            }
+
+                        }
+                    }
+                    ////console.log(carb_ob,fat_ob,pro_ob);
+                    var i;
+                    for (i = 0; i < carb_ob.length; i++) 
+                    {
+                        sum_carb +=carb_ob[i];
+                        sum_fat += fat_ob[i];
+                        sum_pro += pro_ob[i];
+                    }
+                    
+
+                    carb_per_ob = Math.round(((sum_carb/carb_ob_tar)*100));
+                    fat_per_ob = Math.round(((sum_fat/fat_ob_tar)*100));
+                    pro_per_ob = Math.round(((sum_pro/proteins_ob_tar)*100));
+
+                    //console.log(carb_per_ob,fat_per_ob,pro_per_ob);
+                    if(carb_per_ob>100){
+                        document.getElementById("carb_details").innerHTML = "Carbohydrates is exceeding the Target!";
+                    }
+                    else if(carb_per_ob == 100){
+                        document.getElementById("carb_details").innerHTML = "Target of Carbohydrates Attained";
+                    }
+                    else{
+                        document.getElementById("carb_details").innerHTML = "Need to gain Carbohydrates to attain Target";
+                    }
+
+
+                    if(fat_per_ob>100){
+                        document.getElementById("fat_details").innerHTML = "Fat is exceeding the Target!";
+                    }
+                    else if(fat_per_ob == 100){
+                        document.getElementById("carb_details").innerHTML = "Target of Fat Attained";
+                    }
+                    else{
+                        document.getElementById("fat_details").innerHTML = "Need to gain Fat to attain Target";
+                    }
+
+
+                    if(pro_per_ob>100){
+                        document.getElementById("pro_details").innerHTML = "Protein is exceeding the Target ";
+                    }
+                    else if(pro_per_ob == 100){
+                        document.getElementById("carb_details").innerHTML = "Target of Protein Attained";
+                    }
+                    else{
+                        document.getElementById("pro_details").innerHTML = "Need to gain Protein to attain Target";
+                    }
+
+                    total_tar = parseInt(carb_ob_tar)+parseInt(fat_ob_tar)+parseInt(proteins_ob_tar);
+                    total_ob = sum_carb+sum_fat+sum_pro;
+                    
+                    total_per_ob = Math.round((total_ob/total_tar)*100);
+                    total_per_tar = 100 - total_per_ob;
+                    
+                    document.querySelector("#carb_per").style.width = carb_per_ob.toString()+"%"; 
+                    document.querySelector("#fat_per").style.width = fat_per_ob.toString()+"%";
+                    document.querySelector("#pro_per").style.width = pro_per_ob.toString()+"%";
+                    
+                    if(carb_per_ob>=100){
+                        carb_per_ob = 0;
+                    }
+                    if(fat_per_ob >=100){
+                        fat_per_ob = 0;
+                    }
+                    if(pro_per_ob>=100){
+                        pro_per_ob =0;
+                    }
+                    d1 = 100 - carb_per_ob;
+                    d2 = 100 - fat_per_ob;
+                    d3 = 100 - pro_per_ob;
+                    //console.log(d1,d2,d3);
+
+                    ////console.log(carb_per_tar,fat_per_tar,pro_per_tar);
+
+
+                     var config = {
+                        type: 'doughnut',
+
+                        /*data:{
+                            datasets:[{
+                                data:[60,40],
+                                backgroundColor:["#46BFBD","#F7464A"]}],
+                                labels:['FAT','FAT_TARGET']},*/
+                        data: {
+                            datasets: [
+                                {data: [carb_per_ob,d1,0,0,0,0],
+                                borderWidth:10,
+                                borderColor:"black",
+                                backgroundColor:["#00E676","#F7464A"]}, 
+                                
+                                {data: [0,0,pro_per_ob,d3,0,0],
+                                borderWidth:10,
+                                borderColor:"black",
+                                backgroundColor:["","","#00E676","#F7464A","",""]}, 
+                                
+                                {data: [0,0,0,0,fat_per_ob,d2],
+                                borderWidth:10,
+                                borderColor:"black",
+                                backgroundColor: ["","","","","#00E676","#F7464A"]}
+
+                                ],
+                            labels: [
+                                "Carbs",
+                                "Carbs_TARGET",
+                                "Proteins",
+                                "Proteins_TARGET",
+                                "Fat",
+                                "Fat_TARGET"
+                                
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            legend:false,
+                            title: {
+                            display: true,
+                            text: 'Obtained Calories VS Target',
+                        }
+                            }
+                    };
+
+                    var ctx = document.getElementById("chart-area").getContext("2d");
+                    var myDoughnut = new Chart(ctx, config);
+                    
+                    var con_fig = {
+                        type :"bar",
+                        data:{
+                        datasets: [
+                            {
+                                label: "Obtained Calories",
+                                backgroundColor: "rgba(255,99,132,0.2)",
+                                borderColor: "rgba(255,99,132,1)",
+                                borderWidth: 2,
+                                order:0,
+                                hoverBackgroundColor: "rgba(255,99,132,0.4)",
+                                hoverBorderColor: "rgba(255,99,132,1)",
+                                data: [sum_fat,sum_pro,sum_carb],
+                            },
+                            ],
+                        labels: ["Fat","Proteins","Carb"]
+                        },
+                        options:
+                        {
+                            responsive:true,
+                            title: {
+                                display: true,
+                                text: "Chart.js Combo Bar Line Chart"},
+                            animation:{
+                                duration:5000},
+                            tooltips:{
+                                mode: "index",
+                                intersect: true},
+                            annotation:{
+                                drawTime: 'afterDatasetsDraw',
+                                annotations: [{
+                                      id: 'hline1',
+                                      type: 'line',
+                                      mode: 'horizontal',
+                                      scaleID: 'y-axis-0',
+                                      value: fat_ob_tar,
+                                      borderColor: 'green',
+                                      borderWidth: 1,
+                                      label: {
+                                         backgroundColor: "red",
+                                         content: "Fat Target",
+                                         enabled: true
+                                      }
+                                   }, {
+                                      id: 'hline3',
+                                      type: 'line',
+                                      mode: 'horizontal',
+                                      scaleID: 'y-axis-0',
+                                      value: proteins_ob_tar,
+                                      borderColor: 'green',
+                                      borderWidth: 1,
+                                      label: {
+                                         backgroundColor: "red",
+                                         content: "Protein Target",
+                                         enabled: true
+                                      }
+                                   }, {
+                                      id: 'hline2',
+                                      type: 'line',
+                                      mode: 'horizontal',
+                                      scaleID: 'y-axis-0',
+                                      value: carb_ob_tar,
+                                      borderColor: 'green',
+                                      borderWidth: 1,
+                                      label: {
+                                         backgroundColor: "red",
+                                         content: "Carb Target",
+                                         enabled: true
+                                      }
+                                   }]
+                            }
+                    }
+                    };
+
+                    var ct = document.getElementById("chart-total").getContext("2d");
+                    var pieChart = new Chart(ct,con_fig);
+
+                }, function (error) {
+                //console.log("Error: " + error.code);
+                });
+                }
+                
+                document.getElementById('logout').addEventListener('click', toggleSignIn, false);
+                document.getElementById('sidelogout').addEventListener('click', toggleSignIn, false)
+                });
+            }
+
+            window.onload = function(){
+                initApp();
+            }
+            
+        </script>
+        
+
+        <style type="text/css">
+
+                /*https://cdn.mos.cms.futurecdn.net/bkvxsTSowJXVD6A3wGRwsT-1680-80.jpg*/
+                /*
+                body
+                {
+                background-image: url("https://cdn.mos.cms.futurecdn.net/bkvxsTSowJXVD6A3wGRwsT-1680-80.jpg");
+                background-repeat:no-repeat;
+                background-size:auto;
+                background-position:cover;
+                width:auto;
+                height:auto;
+            }*/
+
+            body{
+                background-color: #212121;
+            }
+
+            .container{
+                padding-top: 10px;
+                border-color: rgb(255,0,0);
+                /*background-color: #8e24aa ;*/
+            }
+
+            #card_size{
+                width: auto;
+                height:auto;
+                border-radius: 20px;
+            }
+            #card_pad{
+                padding-top:10px;
+                padding-bottom: 10px;
+            }
+
+            #progress_pad{
+                width :200px;
+                align-items: center;
+            }
+
+            #suma{
+                padding-left: 50px;
+                padding-top: 10px;
+            }
+
+            #chart-area{
+                width:400px;
+                height: 300px;
+            }
+            
+            #ig{
+                height: 200px;
+                width: 300px;
+            }
+            #card_size1{
+                width:auto;
+                height: auto;
+                border-radius:25px;
+            }
+
+            /*
+            
+            #sizeu{
+                padding: 10px;
+                background-color: #ffff ;
+                border-radius: 25px;
+            }
+            
+            
+
+            @media (max-width: 990px) {
+              .resizeimg {
+                height: auto;
+              }
+            }
+
+            @media (min-width: 1000px) {
+              .resizeimg {
+                width: auto;
+                height: 350px;
+              }
+            }*/
+        </style>
+    </head>
+    
+    <body>
+        <script >
+            $(document).ready(function(){
+                $('.sidenav').sidenav();});
+
+        </script>
+
+        <nav style="padding: 0px 10px;">
+            <div class="nav-wrapper">
+                
+                <a href="search" class="brand-logo">KetoDiet</a>
+                <a href="#" class="sidenav-trigger" data-target="mobile-nav">
+                <i class="material-icons">menu</i>
+                </a>
+              
+                <ul id="nav-mobile" class="right hide-on-med-and-down">
+                    <li>
+                        <!--a href="#user"><img id="dispimage" class="circle"></a-->
+                    <a href="#name"><span id="dispname" class="white-text name"></span></a>
+                    </li>
+                    <li><a href="user">Set Target</a></li>
+                    <li><a href="datatable">FoodData</a></li>
+                    <li><a id="logout">Logout</a></li>
+                </ul>
+            </div>
+        </nav>
+
+        <ul id="mobile-nav" class="sidenav">
+            <li>
+                <div class="user-view">
+                  <div class="background">
+                    <img id ="ig" src="https://miro.medium.com/max/3200/0*UR0--BAuhEYKtVHB">
+                  </div>
+                  <a href="#user"><img id="dispimage" class="circle"></a>
+                  <a href="#name"><span id="sidedispname" class="white-text name"></span></a>
+                  <a href="#email"><span id="dispemail" class="white-text email"></span></a>
+                </div>
+            </li>
+            <li><a href="search"><i class="material-icons">home</i>Home</a></li>
+            <li><a href="datatable"><i class="material-icons">restaurant</i>FoodData</a></li>
+            <li><a href="user"><i class="material-icons">settings</i>Settings</a></li>
+            <li><a href="charts"><i class="material-icons">insert_chart</i>Diet Charts</a></li>
+            <li><a id="sidelogout"><i class="material-icons">directions_walk</i>Logout</a></li>
+        </ul>
+
+        <div class="container">
+            
+            <div class="row" id="ro2">
+                <div class="col s12 xl4">
+                    <!-- Promo Content 1 goes here -->
+                    <div id="card_size" class="card small">
+                    <div id="card_pad" class="center-align">
+                        <h3 id="fat_tar"></h3>
+                        <h5>FAT</h5>
+                        <div id="suma">
+                        <div id="progress_pad" class="progress">
+                            <div class="determinate" id="fat_per"></div>
+                        </div>
+                    </div>
+                    </div>    
+                    </div>
+              </div>
+
+              <div class="col s12 xl4">
+                    <!-- Promo Content 2 goes here -->
+                    <div id="card_size" class="card small">
+                        <div id="card_pad" class="center-align">
+                            <h3 id="proteins_tar"></h3>
+                            <h5>PROTEINS</h5>
+                            <div id="suma">
+                                <div id="progress_pad" class="progress">
+                                    <div class="determinate" id="pro_per" ></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+              </div>
+
+              <div class="col s12 xl4">
+                    <!-- Promo Content 3 goes here -->
+                    <div id="card_size" class="card small">
+                        <div id="card_pad" class="center-align">
+                            <h3 id="carb_tar"></h3>
+                            <h5>CARBOHYDRARTES</h5>
+                            <div id="suma">
+                                <div id="progress_pad" class="progress">
+                                    <div class="determinate" id="carb_per" ></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+              </div>
+
+            </div>
+</div>
+
+
+
+            <div class="container">
+            <div class="row">
+
+            <div class="col s12 xl4" id="sizeu">
+                <div id="card_size1" class="card small">
+                <canvas id="chart-area"/>
+            </div>
+            </div>
+
+            <div class="col s12 xl4">
+                    <div id="card_size" class="card small">
+                        <div id="card_pad" class="center-align">
+                            <h5>Target Updates</h5>
+                                
+                                <p id="fat_details" style="font-weight: bold;"></p>
+                                
+                                <p id="pro_details" style="font-weight: bold;"></p>
+                                
+                                <p id="carb_details" style="font-weight: bold;text-rendering: auto;"></p>
+                                                                                                                            
+                        </div>
+                    </div>
+              </div>
+
+              <!--div class="col s12 xl4" id="sizeu">
+                <div id="card_size1" class="card small">
+                <canvas id="chart-total"/>
+            </div-->
+            </div>
+
+
+
+
+          </div>
+
+        </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            <!--div id="card_size" class="card small">
+                <div id="card_pad" class="center-align">
+                    <h3>226</h3>
+                    <h5>FAT</h5>
+                    <div id="progress_pad" class="progress" >
+                        <div class="determinate" style="width: 70%"></div>
+                    </div>
+                </div>    
+            </div>
+
+            <div id="card_size" class="card small">
+                <div id="card_pad" class="center-align">
+                <h3>175</h3>
+                <h5>PROTEINS</h5>
+                <div id="progress_pad" class="progress">
+                    <div class="determinate" style="width: 70%"></div>
+                </div>
+                </div>
+            </div>
+                
+            <div id="card_size" class="card small">
+                <div id="card_pad" class="center-align">
+                <h3>89</h3>
+                <h5>CARBOHYDRARTES</h5>
+                <div id="progress_pad" class="progress">
+                    <div class="determinate" style="width: 70%"></div>
+                </div>
+                </div>
+            </div--->
+
+
+            
+
+
+    </body>
+</html>

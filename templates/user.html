@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>KetoDiet</title>
+	<!-- Compiled and minified CSS -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv=X-UA-Compatible content="IE=edge">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/js/materialize.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <!-- Compiled and minified JavaScript -->
+    <script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-auth.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    
+    <script>
+    
+    var firebaseConfig = {
+    "apiKey": "AIzaSyCiVqNH0GtZaM4EPjjWVIIYbCjgDXFmUfg",
+    "authDomain": "homechef-34eba.firebaseapp.com",
+    "databaseURL": "https://homechef-34eba.firebaseio.com",
+    "projectId": "homechef-34eba",
+    "storageBucket": "homechef-34eba.appspot.com",
+    "messagingSenderId": "722051392269",
+    "appId": "1:722051392269:web:dd7d5bb1d92fd95093c644"
+    };
+    
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    var database = firebase.database();
+    
+    function toggleSignIn() {
+      if (firebase.auth().currentUser) {
+        //console.log("clicked");
+        // [START signout]
+        firebase.auth().signOut();
+        window.location.assign('https://key2diet.herokuapp.com');
+        // [END signout]
+      }
+      else{
+        window.location.assign('https://key2diet.herokuapp.com');
+      }
+    }
+
+    function pushTarget(){
+      
+      var uid = firebase.auth().currentUser.uid;
+      var carb = document.getElementById("carb").value
+      var fat = document.getElementById("fat").value
+      var protein = document.getElementById("protein").value
+      //console.log(carb,fat,protein)
+      var data = [carb,fat,protein]
+      firebase.database().ref('/ketousers/' + uid +"/").update({
+        "target": data,
+      });
+      M.toast({html: 'Target Marked!', classes: 'rounded',directions_walk:''});
+    }
+
+
+    function initApp(){
+      firebase.auth().onAuthStateChanged(function(user) 
+      {
+        if (user) 
+        {
+            // User is signed in.
+          var displayName = user.displayName;
+          var email = user.email;
+          var emailVerified = user.emailVerified;
+          var photoURL = user.photoURL;
+          var isAnonymous = user.isAnonymous;
+          var uid = user.uid;
+          var providerData = user.providerData;
+          ////console.log(email,displayName,uid)
+          var dispname = document.getElementById("dispname");
+          dispname.textContent = displayName;
+          var sidedispname = document.getElementById("sidedispname");
+          sidedispname.textContent = displayName;
+          var dispemail = document.getElementById("dispemail");
+          dispemail.textContent = email;
+          var dispimage = document.getElementById("dispimage");
+          dispimage.src = photoURL;
+
+        }
+      });
+      document.getElementById('send_target').addEventListener('click', pushTarget, false);
+      document.getElementById('logout').addEventListener('click', toggleSignIn, false);
+      document.getElementById('sidelogout').addEventListener('click', toggleSignIn, false);
+    }
+
+    window.onload = function() {
+      initApp();
+      ////console.log(user);
+    };
+
+    </script>
+
+
+
+
+    <style>
+    body {
+        /*https://cdn.mos.cms.futurecdn.net/bkvxsTSowJXVD6A3wGRwsT-1680-80.jpg*/
+    background-image: url("https://cdn.mos.cms.futurecdn.net/bkvxsTSowJXVD6A3wGRwsT-1680-80.jpg");
+    background-repeat:no-repeat;
+    background-size:auto;
+    background-position:cover;
+    width:auto;
+    height:auto;
+    
+}
+#targetcard{
+  align-items: center;
+  padding: 10px;
+  background:rgba(0,0,0,.6);
+  border-radius: 25px;
+  
+}
+
+#tarsize{
+  padding: 30px;
+  height: 400px;
+  border-radius: 25px;
+}
+.container{
+  padding: 30px;
+  height: auto;
+  width: auto;
+}
+#send_target{
+  background-color: #ee6e73;
+}
+#ig{
+    height: 200px;
+    width: 300px;
+}
+/*
+#card_dispimage{
+  padding: 10px;
+  border-radius: 50px;
+}
+#csize{
+  border-radius: 25px;
+  padding: 10px;
+  width: auto;
+  height: auto;
+}
+
+@media screen and (min-width: 601px) {
+
+    #personalcard { display: none; }
+    #div-desktop { display: block; }
+
+}
+
+@media screen and (max-width: 600px) {
+
+    #personalcard { display: block; }
+    #div-desktop { display: none; }
+
+}*/
+
+</style>
+
+</head>
+<body>
+    <nav style="padding: 0px 10px;">
+    <div class="nav-wrapper">
+      <a href="search" class="brand-logo">KetoDiet</a>
+        <a href="#" class="sidenav-trigger" data-target="mobile-nav">
+            <i class="material-icons">menu</i>
+        </a>
+      
+        <ul id="nav-mobile" class="right hide-on-med-and-down">
+        <li>
+            <!--a href="#user"><img id="dispimage" class="circle"></a-->
+            <a href="#name"><span id="dispname" class="white-text name"></span></a>
+        </li>
+        <li><a href="datatable">FoodData</a></li>
+        <li><a href="charts">Diet Charts</a></li>
+        <li><a id="logout">Logout</a></li>
+      </ul>
+    </div>
+  </nav>
+
+ <ul id="mobile-nav" class="sidenav">
+    <li><div class="user-view">
+      <div class="background">
+        <img id ="ig" src="https://miro.medium.com/max/3200/0*UR0--BAuhEYKtVHB">
+      </div>
+      <a href="#user"><img id="dispimage" class="circle"></a>
+      <a href="#name"><span id="sidedispname" class="white-text name"></span></a>
+      <a href="#email"><span id="dispemail" class="white-text email"></span></a>
+    </div></li>
+    <li><a href="search"><i class="material-icons">home</i>Home</a></li>
+    <li><a href="datatable"><i class="material-icons">restaurant</i>FoodData</a></li>
+    <li><a href="user"><i class="material-icons">settings</i>Set Target</a></li>
+    <li><a href="charts"><i class="material-icons">insert_chart</i>Diet Charts</a></li>
+    <li><a id="sidelogout"><i class="material-icons">directions_walk</i>Logout</a></li>
+  </ul>
+  
+<script >
+    $(document).ready(function(){
+        $('.sidenav').sidenav();
+    });
+</script>
+  
+
+    <!--div class="col s12 m4" id="personalcard" >
+      <div id="csize" class="card small">
+          <div class="card-image waves-effect waves-block waves-light">
+            <img class="activator" id="card_dispimage" class="circle">
+          </div>
+        <div class="card-content">
+          <span class="card-title activator grey-text text-darken-4">Personal Details<i class="material-icons right">more_vert</i></span>
+        </div>
+        <div class="card-reveal">
+          <span class="card-title grey-text text-darken-4" id="card_dispname"><i class="material-icons right">close</i></span>
+          <p><span  class="white-text email" id="card_dispemail"></span></p>
+        </div>
+      </div>
+    </div-->
+
+  <div class="container">
+    <div class="col s12 m8" id="targetcard">
+      <div id="tarsize" class="card small">
+        <h4 class="center-align">Set Target</h4>
+            
+                <div class="input-field col s12">
+                    <i class="material-icons prefix">local_cafe</i>
+                    <input id="carb" type="number" class="validate" min="1">
+                    <label for="email" style="color:black;" data-error="wrong" data-success="right">Carb Value</label>
+                </div>
+                <div class="input-field col s12">
+                    <i class="material-icons prefix">fastfood</i>
+                    <input id="fat" type="number" class="validate" min="1">
+                    <label for="email" style="color:black;" data-error="wrong" data-success="right">Fat Value</label>
+                </div>
+                <div class="input-field col s12">
+                    <i class="material-icons prefix">local_drink</i>
+                    <input id="protein" type="number" class="validate" min="1">
+                    <label for="email" style="color:black;" data-error="wrong" data-success="right">Proteins Value</label>
+                </div>
+
+                <div class="center-align">
+                <div class="input-field col s12" class="center-align">
+                <button id="send_target" class="btn waves-effect waves-light" type="button" name="action">Set
+                <i class="material-icons right">fitness_center</i>
+                </button>
+                </div>
+              </div>
+
+
+
+
+
+    </div>
+    </div>
+</div>
+</body>
+</html>

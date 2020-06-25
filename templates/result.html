@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+   <body>
+      <table border = 1>
+         {% for key, value in result.items() %}
+            <tr>
+               <th> {{ key }} </th>
+               <td> {{ value }} </td>
+            </tr>
+         {% endfor %}
+      </table>
+   </body>
+</html>
+
+<!--style type="text/css">
+    #but{
+        background-color: #ee6e73;
+    }
+    </style-->
+
+   <!--div class="row" id="data" style="padding:10px;">
+        <form class="col s12" action="http://localhost:5000/success" method="POST">
+            <div class="row">
+                <div class="input-field col s12">
+                    <i class="material-icons prefix">search</i>
+                    <input type="text" id="autocomplete-input" class="autocomplete">
+                    <label for="autocomplete-input" style="color:white;">FoodName</label>
+                </div>
+                <div class="input-field col s12">
+                    <i class="material-icons prefix">mail</i>
+                    <input id="email" type="number" class="validate" min="1">
+                    <label for="email" style="color:white;" data-error="wrong" data-success="right">Quantity</label>
+                </div>
+                <div class="input-field col s12">
+                    <i class="material-icons prefix">mail</i>
+                    <input id="email" type="number" class="validate" min="1">
+                    <label for="email" style="color:white;" data-error="wrong" data-success="right">Carb Target</label>
+                </div>
+                <div class="input-field col s12">
+                    <i class="material-icons prefix">mail</i>
+                    <input id="email" type="number" class="validate" min="1">
+                    <label for="email" style="color:white;" data-error="wrong" data-success="right">Fat Target</label>
+                </div>
+                <div class="input-field col s12">
+                    <i class="material-icons prefix">mail</i>
+                    <input id="email" type="number" class="validate" min="1">
+                    <label for="email" style="color:white;" data-error="wrong" data-success="right">Proteins Target</label>
+                </div>
+
+                <div class="input-field col s12">
+                <button id="but" class="btn waves-effect waves-light" type="submit" name="action">Submit
+                <i class="material-icons right">send</i>
+                </button>
+                </div>
+
+            </div>
+        </form>
+    </div-->
+
+
+
+
+
+<!--div>
+    {% for message in form.autocomp.errors %}
+         <div>{{ message }}</div>
+      {% endfor %}
+    <-->
+
+    <!--script>
+    $(function() {
+        $.ajax({
+            url: '{{ url_for("autocomplete") }}'
+            }).done(function (data){
+                $('#fooditem').autocomplete({
+                    source: data,
+                    minLength: 1
+                });
+            });
+        });
+
+</script-->
+
+
+      <!--h2 style = "color:white;text-align: center;">Food App</h2-->
+
+      
+      
+      <!--form action = "http://localhost:5000/success" method ="POST">
+         <fieldset>
+            <legend style = "color:white;">Enter Food Details</legend>
+            {{ form.hidden_tag() }}
+            
+            <div style = "font-size:20px; font-weight:bold;">
+
+                {{ form.autocomp.label }}
+                {{ form.autocomp }}
+                {{ form.quantity.label }}
+                {{ form.quantity }}
+                {{ form.carb_target.label }}
+                {{ form.carb_target }}
+                {{ form.fat_target.label }}
+                {{ form.fat_target }}
+                {{ form.proteins.label }}
+                {{ form.proteins }}
+               <br>
+               {{ form.submit }}
+            </div>
+            
+         </fieldset>
+      </form-->
+    <!--script>
+    $(function() {
+        $.ajax({
+            url: '{{ url_for("autocomplete") }}'
+            }).done(function (data){
+                $('#fooditem').autocomplete({
+                    source: data,
+                    minLength: 1
+                });
+            });
+        });
+
+</script-->
+
+
+var ref = firebase.database().ref('/users/'+ uid);
+        ref.on("value", function(snapshot) {
+        data = snapshot.val();
+        console.log(data);
+        for (const [key, value] of Object.entries(data)) {
+            //console.log(key, value);
+            //console.log(key);
+            if(key == "data"){
+                //console.log(value);
+                for (const [k, v] of Object.entries(value)) {
+                    //console.log(k,v);
+                    if(k=="Carb Per Unit")
+                    {
+                        carb.push(parseInt(v));
+                    }
+                    else if(k=="Fat Per Unit"){
+                        fat.push(parseInt(v));
+                    }
+                    else if(k=="Proteins Per Unit"){
+                        proteins.push(parseInt(v));
+                    }
+                }
+            }
+            
+        }
+        console.log(carb,fat,proteins);
+        }, function (error) {
+        console.log("Error: " + error.code);
+        });
+
+      }
+
+
+
+
+
+var check_len = foodname.length;
+            for (i = 0; i < check_len; i++) {
+                temp_list = {"Foodname":foodname[i],"Carb":[i].toString(),"Fat":[i].toString(),"Proteins":[i].toString()};
+                foodlist.push(temp_list);
+            }
+            console.log(foodlist);
+
+
+
+
+    <!--h2 style = "color:white;text-align: center;">Food App</h2-->
+      <!--div>
+      {% for message in form.autocomp.errors %}
+         <div>{{ message }}</div>
+      {% endfor %}
+      </div-->
+      <!--form action = "http://localhost:5000/success" method ="POST">
+         <fieldset>
+            <legend style = "color:white;">Enter Food Details</legend>
+            {{ form.hidden_tag() }}
+            
+            <div style = font-size:20px; font-weight:bold; margin-left:150px;>
+               {{ form.autocomp.label }}
+               {{ form.autocomp }}
+               <br>
+               {{ form.submit }}
+            </div>
+            
+         </fieldset>
+      </form-->
+
+      https://help.tableau.com/current/api/js_api/en-us/JavaScriptAPI/js_api.htm
+      https://jsfiddle.net/zuupzpLL/
+
+
+      <div class="col s12 m6" class="center-align">
+                           <div class="left-align">
+                              <label>
+                              <input type="checkbox" />
+                              <span>Remember me</span>
+                                 </label>
+                              </div>
+                           </div>

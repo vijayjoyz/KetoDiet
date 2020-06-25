@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+<head>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv=X-UA-Compatible content="IE=edge">
+	<title>KetoDiet</title>
+
+	<!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <!--script type="text/javascript" src="index.js"></script-->
+    <!-- Compiled and minified JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+	<link rel = "stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+
+	<!-- The core Firebase JS SDK is always required and must be listed first -->
+	<script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-app.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-database.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-auth.js"></script>
+	<!-- TODO: Add SDKs for Firebase products that you want to use
+     https://firebase.google.com/docs/web/setup#available-libraries -->
+
+	<script>
+	  // Your web app's Firebase configuration
+	  var firebaseConfig = {
+	    "apiKey": "AIzaSyCiVqNH0GtZaM4EPjjWVIIYbCjgDXFmUfg",
+	    "authDomain": "homechef-34eba.firebaseapp.com",
+	    "databaseURL": "https://homechef-34eba.firebaseio.com",
+	    "projectId": "homechef-34eba",
+	    "storageBucket": "homechef-34eba.appspot.com",
+	    "messagingSenderId": "722051392269",
+	    "appId": "1:722051392269:web:dd7d5bb1d92fd95093c644"
+	  };
+	  // Initialize Firebase
+	  firebase.initializeApp(firebaseConfig);
+	  var provider = new firebase.auth.GoogleAuthProvider();
+
+	  function toggleSignIn() {
+	      if (firebase.auth().currentUser) {
+	        // [START signout]
+	        firebase.auth().signOut();
+	        // [END signout]
+	      } else {
+	        var email = document.getElementById('email').value;
+	        var password = document.getElementById('password').value;
+	        if (email.length < 4) {
+	          alert('Please enter an email address.');
+	          return;
+	        }
+	        if (password.length < 4) {
+	          alert('Please enter a password.');
+	          return;
+	        }
+	        // Sign in with email and pass.
+	        // [START authwithemail]
+	        firebase.auth().signInWithEmailAndPassword(email, password).then(function(result){
+	        window.location.assign("https://key2diet.herokuapp.com/search")
+	      	//console.log(result)
+	      }).catch(function(error) {
+	          // Handle Errors here.
+	          var errorCode = error.code;
+	          var errorMessage = error.message;
+	          // [START_EXCLUDE]
+	          if (errorCode === 'auth/wrong-password') {
+	            alert('Wrong password.');
+	          } else {
+	            alert(errorMessage);
+	          }
+	          //console.log(error);
+	          //document.getElementById('quickstart-sign-in').disabled = false;
+	          // [END_EXCLUDE]
+	        });
+	        // [END authwithemail]
+	      }
+	      //document.getElementById('quickstart-sign-in').disabled = true;
+	    }
+
+	    function handleSignUp() {
+	      var email = document.getElementById('email').value;
+	      var password = document.getElementById('password').value;
+	      if (email.length < 4) {
+	        alert('Please enter an email address.');
+	        return;
+	      }
+	      if (password.length < 4) {
+	        alert('Please enter a password.');
+	        return;
+	      }
+	      // Create user with email and pass.
+	      // [START createwithemail]
+	      firebase.auth().createUserWithEmailAndPassword(email, password).then(function(result){
+	      	//console.log(result)
+	      }).catch(function(error) {
+	        // Handle Errors here.
+	        var errorCode = error.code;
+	        var errorMessage = error.message;
+	        // [START_EXCLUDE]
+	        if (errorCode == 'auth/weak-password') {
+	          alert('The password is too weak.');
+	        } else {
+	          alert(errorMessage);
+	        }
+	        //console.log(error);
+	        // [END_EXCLUDE]
+	      });
+	      // [END createwithemail]
+	    }
+
+	    function googlesignin()
+	    {
+		    firebase.auth().signInWithPopup(provider).then(function(result) {
+		      var token = result.credential.accessToken;
+		      var user = result.user;
+		    
+		      //console.log(token)
+		      //console.log(user)
+		      window.location.assign("https://key2diet.herokuapp.com/search")
+		    }).catch(function(error) {
+		      var errorCode = error.code;
+		      var errorMessage = error.message;
+		    
+		      //console.log(error.code)
+		      //console.log(error.message)
+		   });
+		}
+		function forgotpass(){
+			//console.log("click")
+			var email = document.getElementById('email').value;
+	      // [START sendpasswordemail]
+	      	firebase.auth().sendPasswordResetEmail(email).then(function() {
+	        // Password Reset Email Sent!
+	        // [START_EXCLUDE]
+	        alert('Password Reset Email Sent!');
+	        // [END_EXCLUDE]
+	      }).catch(function(error) {
+	        // Handle Errors here.
+	        var errorCode = error.code;
+	        var errorMessage = error.message;
+	        // [START_EXCLUDE]
+	        if (errorCode == 'auth/invalid-email') {
+	          alert(errorMessage);
+	        } else if (errorCode == 'auth/user-not-found') {
+	          alert(errorMessage);
+	        }
+	        //console.log(error);
+	        // [END_EXCLUDE]
+	      });
+		}
+
+	    function initApp()
+	    {
+	    	firebase.auth().onAuthStateChanged(function(user) {
+		});
+	    	document.getElementById('login').addEventListener('click', toggleSignIn, false);
+	    	document.getElementById('register').addEventListener('click', handleSignUp, false);
+	    	document.getElementById('gmail').addEventListener('click', googlesignin, false);
+	    	document.getElementById('forgot_password').addEventListener('click', forgotpass, false);
+		}	
+	    window.onload = function() {
+	      initApp();
+	    };
+
+
+	</script>
+
+
+	<style>
+    body {
+    	/*https://cdn.mos.cms.futurecdn.net/bkvxsTSowJXVD6A3wGRwsT-1680-80.jpg*/
+ 	background-image: url("https://cdn.mos.cms.futurecdn.net/bkvxsTSowJXVD6A3wGRwsT-1680-80.jpg");
+ 	background-repeat:no-repeat;
+ 	background-size:auto;
+ 	background-position:center;
+ 	width:auto;
+ 	height:auto;
+ 
+}
+.container{
+	align-content: center;
+	padding-top: 100px;
+	/*padding:70px 50px 70px 50px;*/
+
+}
+
+.login .card{
+	background:rgba(0,0,0,.6);
+	border-radius: 25px;
+}
+
+.login label{
+	font-size:16px;
+	color:#ccc;
+}
+
+.login input{
+	font-size: 22px !important;
+	color:white;
+}
+
+.card-title{
+	font-size: 50px !important;
+	color:white;
+	align-content:center;
+	padding-left: 20px;
+}
+
+
+#login,#register{
+	width: 100px;
+	background-color: blue;
+}
+#gmail{
+	background-color: rgb(200,130,50); 
+	width:200px;
+}
+/*.login button:hover{
+	padding:0px 40px;
+
+
+}*/
+</style>
+</head>
+<body>
+	<div class="container">
+		<div class="row login">
+			<div class="col s12 14 offser-14">
+				<div class="card">
+					
+					<div class="center-align">
+					<span class="card-title">KetoDiet</span>
+					</div>
+					<div class = "card-content">
+						<div class="input-field col s12">
+				          <i class="material-icons prefix" style ="color:white;">email</i>
+				          <input type="email" id="email">
+				          <label for="autocomplete-input">Email</label>
+				        </div><br>
+
+				        <div class="input-field col s12">
+				          <i class="material-icons prefix" style ="color:white;">lock</i>
+				          <input type="password" id="password">
+				          <label for="autocomplete-input">Password</label>
+				        </div><br>
+
+						<div class="form-field">
+							<div class="center-align">
+								<button class="waves-effect waves-light btn-small red white-text" id="gmail">Sign in with <i class="fa fa-google fa-fw"></i></button>
+								<br><br>
+								<button class="waves-effect waves-light btn-small red white-text" id="login" >Login</button>
+								<button class="waves-effect waves-light btn-small red white-text" id="register">Register</button>
+							</div>
+						</div><br>
+
+						<div class="form-field">
+							<div  class="center-align">
+								<span id="forgot_password" class="white-text name">Forgot Password?</span>
+      									<!--button class="btn-small red white-text" id="forgot_password">	Forgot Password</button-->	
+								<br>
+							</div>
+						</div>	
+
+						
+
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

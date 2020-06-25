@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>KetoDiet</title>
+	<!-- Compiled and minified CSS -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv=X-UA-Compatible content="IE=edge">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/js/materialize.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <!-- Compiled and minified JavaScript -->
+    <script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-auth.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    
+    <script>
+    
+    var firebaseConfig = {
+    "apiKey": "AIzaSyCiVqNH0GtZaM4EPjjWVIIYbCjgDXFmUfg",
+    "authDomain": "homechef-34eba.firebaseapp.com",
+    "databaseURL": "https://homechef-34eba.firebaseio.com",
+    "projectId": "homechef-34eba",
+    "storageBucket": "homechef-34eba.appspot.com",
+    "messagingSenderId": "722051392269",
+    "appId": "1:722051392269:web:dd7d5bb1d92fd95093c644"
+    };
+    
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    var database = firebase.database();
+    var carb = [];
+    var fat = [];
+    var proteins = [];
+    var foodlist = [];
+    var foodname =[];
+
+    function toggleSignIn() {
+      if (firebase.auth().currentUser) {
+        //console.log("clicked");
+        // [START signout]
+        firebase.auth().signOut();
+        window.location.assign('https://key2diet.herokuapp.com');
+        // [END signout]
+      }
+      else{
+        window.location.assign('https://key2diet.herokuapp.com');
+      }
+    }
+
+
+    function initApp()
+    {
+        firebase.auth().onAuthStateChanged(function(user)
+        {
+            if (user) 
+        {
+              // User is signed in.
+            var displayName = user.displayName;
+            var email = user.email;
+            var emailVerified = user.emailVerified;
+            var photoURL = user.photoURL;
+            var isAnonymous = user.isAnonymous;
+            var uid = user.uid;
+            var providerData = user.providerData;
+            // [START_EXCLUDE]
+            ////console.log(email,displayName,uid)
+            var dispname = document.getElementById("dispname");
+            dispname.textContent = displayName;
+            var sidedispname = document.getElementById("sidedispname");
+            sidedispname.textContent = displayName;
+            var dispemail = document.getElementById("dispemail");
+            dispemail.textContent = email;
+            var dispimage = document.getElementById("dispimage");
+            dispimage.src = photoURL;
+
+            var ref = firebase.database().ref('/ketousers/'+ uid + '/food_data');
+            ref.once("value").then(function(snapshot)
+            {
+                    data = snapshot.val();
+                    ////console.log(data);
+                    if(data == null){
+                        alert("Please enter Food in Search");
+                        window.location.assign('search');
+                    }
+                    for (const [key, value] of Object.entries(data)) {
+                        ////console.log(key, value);
+                        ////console.log(value);
+
+                        for (const [k, v] of Object.entries(value)) {
+                            for (const [kd, vd] of Object.entries(v)) {
+                                ////console.log(kd,vd);
+                                if(kd=="CarbPerUnit")
+                                {
+                                    carb.push(parseInt(vd));
+                                }
+                                else if(kd=="FatPerUnit"){
+                                    fat.push(parseInt(vd));
+                                }
+                                else if(kd=="ProteinsPerUnit"){
+                                    proteins.push(parseInt(vd));
+                                }
+                                else if(kd== "FoodName"){
+                                    foodname.push(vd);
+                                }
+                            
+                        }
+                        }
+                            
+                    }
+                    ////console.log(carb,fat,proteins,foodname);
+                    var i;
+                    for(i=0;i<carb.length;i++){
+                    var dict_data = {"FoodName":foodname[i],"CarbPerUnit":carb[i],"FatPerUnit":fat[i],"ProteinsPerUnit":proteins[i]};
+                    foodlist.push(dict_data);
+                    }
+                    //console.log(foodlist);
+            }, function (error) {
+            //console.log("Error: " + error.code);
+            });
+
+            
+        }
+        document.getElementById('logout').addEventListener('click', toggleSignIn, false);
+        document.getElementById('sidelogout').addEventListener('click', toggleSignIn, false);
+        document.getElementById('del').addEventListener('click', deletedata, false);
+
+        });
+    }
+
+    function buildHtmlTable() {
+        //console.log("loaded");
+                var columns = addAllColumnHeaders(foodlist);
+     
+                for (var i = 0 ; i < foodlist.length ; i++) {
+                    var row$ = $('<tr/>');
+                    for (var colIndex = 0 ; colIndex < columns.length ; colIndex++) {
+                        var cellValue = foodlist[i][columns[colIndex]];
+             
+                        if (cellValue == null) { cellValue = ""; }
+             
+                        row$.append($('<td/>').html(cellValue));
+                    }
+                    $("#excelDataTable").append(row$);
+                }  
+            }
+
+
+            function addAllColumnHeaders(foodlist){
+                var columnSet = [];
+                var headerTr$ = $('<tr/>');
+             
+                for (var i = 0 ; i < foodlist.length ; i++) {
+                    var rowHash = foodlist[i];
+                    for (var key in rowHash) {
+                        if ($.inArray(key, columnSet) == -1){
+                            columnSet.push(key);
+                            headerTr$.append($('<th/>').html(key));
+                        }
+                    }
+                }
+                $("#excelDataTable").append(headerTr$);
+             
+                return columnSet;
+            }
+
+        function callHtml(){
+            setTimeout(function(){buildHtmlTable();},3000);
+        }
+
+
+        function deletedata(){
+        firebase.auth().onAuthStateChanged(function(user)
+        {
+            if (user) 
+        {
+            var uid = user.uid;
+            firebase.database().ref('ketousers/' + uid + '/food_data').remove();
+            window.location.assign("https://key2diet.herokuapp.com/search");
+        }
+        });
+        }
+
+    window.onload = function() {
+      initApp();
+      callHtml();
+      //getData();
+    };
+
+    </script>
+
+
+    <style>
+    body {
+        /*https://cdn.mos.cms.futurecdn.net/bkvxsTSowJXVD6A3wGRwsT-1680-80.jpg
+    background-image: url("https://cdn.mos.cms.futurecdn.net/bkvxsTSowJXVD6A3wGRwsT-1680-80.jpg");
+    background-repeat:no-repeat;
+    background-size:auto;
+    background-position:cover;
+    width:auto;
+    height:auto;*/
+    background-image:url("https://miro.medium.com/max/3200/0*UR0--BAuhEYKtVHB");
+    /*background-position: 70%;
+    background-repeat: no-repeat;
+    background-color: #212121;*/
+
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
+    background-color: #464646
+    
+}
+#excelDataTable{
+    background:rgba(0,0,0,.6);
+    border-radius: 25px;
+    color:white;
+    
+}
+
+#del{
+    float: center;
+    background-color: #ee6e73;
+
+}
+
+#ig{
+    height: 200px;
+    width: 300px;
+}
+.tab{
+    padding: 10px;
+}
+
+</style>
+
+</head>
+<body>
+    <nav style="padding: 0px 10px;">
+    <div class="nav-wrapper">
+      <a href="search" class="brand-logo">KetoDiet</a>
+        <a href="#" class="sidenav-trigger" data-target="mobile-nav">
+            <i class="material-icons">menu</i>
+        </a>
+      
+        <ul id="nav-mobile" class="right hide-on-med-and-down">
+        <li>
+            <!--a href="#user"><img id="dispimage" class="circle"></a-->
+            <a href="#name"><span id="dispname" class="white-text name"></span></a>
+        </li>
+        <li><a href="user">Set Target</a></li>
+        <li><a href="charts">Diet Charts</a></li>
+        <li><a id="logout">Logout</a></li>
+      </ul>
+    </div>
+  </nav>
+
+ <ul id="mobile-nav" class="sidenav">
+    <li><div class="user-view">
+      <div class="background">
+        <img id ="ig" src="https://miro.medium.com/max/3200/0*UR0--BAuhEYKtVHB">
+      </div>
+      <a href="#user"><img id="dispimage" class="circle"></a>
+      <a href="#name"><span id="sidedispname" class="white-text name"></span></a>
+      <a href="#email"><span id="dispemail" class="white-text email"></span></a>
+    </div></li>
+    <li><a href="search"><i class="material-icons">home</i>Home</a></li>
+    <li><a href="datatable"><i class="material-icons">restaurant</i>FoodData</a></li>
+    <li><a href="user"><i class="material-icons">settings</i>Set Target</a></li>
+    <li><a href="charts"><i class="material-icons">insert_chart</i>Diet Charts</a></li>
+    <li><a id="sidelogout"><i class="material-icons">directions_walk</i>Logout</a></li>
+  </ul>
+  
+<script >
+    $(document).ready(function(){
+        $('.sidenav').sidenav();
+    });
+
+</script>
+
+
+<br><br>
+<div class="container">
+    <table id="excelDataTable">
+    </table>
+    <br>
+    <div class="center-align">
+        <button id="del" class="btn waves-effect waves-light">Delete
+            <i class="material-icons left">delete</i>
+    </button>
+    </div>
+
+
+    
+
+    <!--div id="div-mobile">
+        <div id="myDiv"></div><br><br>
+        <div id="myDivd"></div>
+    </div>
+    
+    <div id="div-desktop" class="row" class="center-align">
+        <div class="col s12 m6" class="center-align">
+            <div id="myDiv"></div>
+        </div>
+        <div class="col s12 m6" class="center-align">
+            <div id="myDivd"></div>
+        </div>
+    </div--> 
+</div> 
+</body>
+</html>
