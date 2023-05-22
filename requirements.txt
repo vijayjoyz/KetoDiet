@@ -1,7 +1,7 @@
 Flask==1.0.2
 Jinja2>=2.10.1
 request==2018.11.20
-requests==2.23.0
+requests==2.31.0
 werkzeug>=0.15.3
 gunicorn==19.9.0
 google-api-core==1.17.0
